@@ -18,6 +18,14 @@ import shutil
 import tempfile
 from functools import lru_cache
 
+from Cropanywhere.error_codes import (
+    ERR_CROP_FAIL,
+    ERR_INTERNAL,
+    ERR_NO_FACE,
+    ERR_READ_FAIL,
+    ERR_SAVE_FAIL,
+)
+
 from PIL import Image, ImageOps
 
 from config import get_preset_labels, key_for_label, get_preset_by_key
@@ -241,7 +249,7 @@ def cached_preview(
             model=None,
         )
         if box is None:
-            return None, "❌ No face detected."
+            return None, "❌ No face detected.", ERR_NO_FACE
         cropped = auto_crop(
             pil,
             frontal_margin=int(margin),
@@ -252,9 +260,14 @@ def cached_preview(
         )
         if ratio and cropped:
             cropped = apply_aspect_ratio_filter(cropped, ratio)
+    if method == "headbust" and cropped is None:
+        return None, "❌ No face detected.", ERR_NO_FACE
     if cropped is None:
-        return None, "❌ Crop failed."
-    return apply_filter(cropped, filter_name, intensity), "✅ Preview generated."
+        return None, "❌ Crop failed.", ERR_CROP_FAIL
+    filtered = apply_filter(cropped, filter_name, intensity)
+    if filtered is None:
+        return None, "❌ Crop failed.", ERR_CROP_FAIL
+    return filtered, "✅ Preview generated.", 0
 
 
 @app.get("/favicon.ico")
@@ -285,11 +298,14 @@ async def api_crop_preview(
             os.remove(tmp_path)
             return JSONResponse(
                 status_code=400,
-                content={"error": f"❌ Failed to load original: {e}"},
+                content={
+                    "error": f"❌ Failed to load original: {e}",
+                    "error_code": ERR_READ_FAIL,
+                },
             )
 
         ratio = parse_ratio(aspect_ratio)
-        after_img, msg = cached_preview(
+        after_img, msg, preview_code = cached_preview(
             tmp_path,
             preset_label,
             margin,
@@ -311,9 +327,19 @@ async def api_crop_preview(
         before_path = PREVIEW_DIR / before_name
         after_path = PREVIEW_DIR / after_name
 
-        before_img.save(before_path)
-        if after_img:
-            after_img.save(after_path)
+        try:
+            before_img.save(before_path)
+            if after_img:
+                after_img.save(after_path)
+        except Exception as e:
+            os.remove(tmp_path)
+            return JSONResponse(
+                status_code=500,
+                content={
+                    "error": f"❌ Failed to save preview: {e}",
+                    "error_code": ERR_SAVE_FAIL,
+                },
+            )
 
         os.remove(tmp_path)
 
@@ -322,6 +348,7 @@ async def api_crop_preview(
                 status_code=200,
                 content={
                     "error": msg,
+                    "error_code": preview_code or ERR_CROP_FAIL,
                     "before_url": f"/static/previews/{before_name}",
                     "after_url": None,
                 },
@@ -331,11 +358,15 @@ async def api_crop_preview(
             "message": msg,
             "before_url": f"/static/previews/{before_name}",
             "after_url": f"/static/previews/{after_name}",
+            "error_code": 0,
         }
     except Exception as e:
         return JSONResponse(
             status_code=500,
-            content={"error": f"❌ Preview failed: {e}"},
+            content={
+                "error": f"❌ Preview failed: {e}",
+                "error_code": ERR_INTERNAL,
+            },
         )
 
 
@@ -352,7 +383,12 @@ async def api_crop_process(
     if not files:
         return JSONResponse(
             status_code=400,
-            content={"error": "❌ No files uploaded.", "processed": 0, "total": 0},
+            content={
+                "error": "❌ No files uploaded.",
+                "processed": 0,
+                "total": 0,
+                "error_code": ERR_READ_FAIL,
+            },
         )
 
     key = key_for_label(preset_label)
@@ -365,6 +401,7 @@ async def api_crop_process(
 
     total = len(files)
     processed = 0
+    last_error_code = 0
 
     for f in files:
         try:
@@ -376,15 +413,25 @@ async def api_crop_process(
 
             if method == "headbust":
                 bust = head_bust_crop(img_path, int(margin), ratio, 0.3)
+                if bust is None:
+                    last_error_code = ERR_NO_FACE
+                    os.remove(tmp_path)
+                    continue
             else:
-                box, lm, cv, pil, meta = get_face_and_landmarks(
-                    img_path,
-                    conf_threshold=0.3,
-                    sharpen=True,
-                    apply_rotation=rotate,
-                    model=None,
-                )
+                try:
+                    box, lm, cv, pil, meta = get_face_and_landmarks(
+                        img_path,
+                        conf_threshold=0.3,
+                        sharpen=True,
+                        apply_rotation=rotate,
+                        model=None,
+                    )
+                except Exception:
+                    last_error_code = ERR_READ_FAIL
+                    os.remove(tmp_path)
+                    continue
                 if box is None:
+                    last_error_code = ERR_NO_FACE
                     os.remove(tmp_path)
                     continue
                 bust = auto_crop(
@@ -399,19 +446,32 @@ async def api_crop_process(
                     bust = apply_aspect_ratio_filter(bust, ratio)
 
             if bust is None:
+                last_error_code = ERR_CROP_FAIL
                 os.remove(tmp_path)
                 continue
 
             out_img = apply_filter(bust, filter_name, intensity)
+            if out_img is None:
+                last_error_code = ERR_CROP_FAIL
+                os.remove(tmp_path)
+                continue
 
             base_name, ext = os.path.splitext(os.path.basename(f.filename))
             out_name = f"{base_name}_cropped{ext or '.png'}"
             out_path = job_dir / out_name
-            out_img.save(out_path)
+            try:
+                out_img.save(out_path)
+            except Exception:
+                last_error_code = ERR_SAVE_FAIL
+                os.remove(tmp_path)
+                continue
 
             processed += 1
             os.remove(tmp_path)
         except Exception:
+            last_error_code = last_error_code or ERR_INTERNAL
+            if "tmp_path" in locals() and os.path.exists(tmp_path):
+                os.remove(tmp_path)
             continue
 
     if processed == 0:
@@ -422,6 +482,7 @@ async def api_crop_process(
                 "error": "❌ No faces detected.",
                 "processed": 0,
                 "total": total,
+                "error_code": last_error_code or ERR_NO_FACE,
             },
         )
 
@@ -437,6 +498,7 @@ async def api_crop_process(
         "zip_url": zip_url,
         "processed": processed,
         "total": total,
+        "error_code": 0,
     }
 
 

@@ -22,6 +22,21 @@ const downloadBtn = document.getElementById("download-btn");
 
 let lastZipUrl = null;
 
+function getErrorMessage(code) {
+    switch (code) {
+        case 1001:
+            return "No face detected.";
+        case 1002:
+            return "Failed to read image.";
+        case 1003:
+            return "Cropping failed.";
+        case 1004:
+            return "Saving failed.";
+        default:
+            return "Unknown error.";
+    }
+}
+
 // ===============================
 // UI helpers
 // ===============================
@@ -53,6 +68,18 @@ function setStatus(text) {
 
 function setProgressInfo(text) {
     progressInfo.textContent = text || "";
+}
+
+function hideErrorBanner() {
+    if (!errorBanner) return;
+    errorBanner.style.display = "none";
+    errorBanner.textContent = "";
+}
+
+function showErrorBanner(code) {
+    if (!errorBanner) return;
+    errorBanner.textContent = getErrorMessage(code);
+    errorBanner.style.display = "block";
 }
 
 function renderBeforeAfter(beforeUrl, afterUrl, errorMsg) {
@@ -138,6 +165,7 @@ previewBtn.addEventListener("click", async () => {
     setStatus("Generating preview...");
     previewBox.innerHTML = `<p class="placeholder">Processing preview...</p>`;
     downloadBtn.disabled = true;
+    hideErrorBanner();
 
     try {
         const res = await fetch("/api/crop/preview", {
@@ -147,13 +175,16 @@ previewBtn.addEventListener("click", async () => {
 
         const data = await res.json();
 
-        if (!res.ok || data.error) {
+        if (!res.ok || data.error_code !== 0) {
+            const message = data.error || getErrorMessage(data.error_code);
+            showErrorBanner(data.error_code);
             setProgress(0);
-            setStatus(data.error || "Preview failed.");
-            previewBox.innerHTML = `<p style="color:#f88;">${data.error}</p>`;
+            setStatus(message || "Preview failed.");
+            previewBox.innerHTML = `<p style="color:#f88;">${message}</p>`;
             return;
         }
 
+        hideErrorBanner();
         setProgress(80);
         renderBeforeAfter(data.before_url, data.after_url);
         setStatus(data.message || "Preview generated.");
@@ -188,6 +219,7 @@ processBtn.addEventListener("click", async () => {
     setStatus("Processing images...");
     setProgressInfo("");
     downloadBtn.disabled = true;
+    hideErrorBanner();
 
     try {
         const res = await fetch("/api/crop/process", {
@@ -197,13 +229,16 @@ processBtn.addEventListener("click", async () => {
 
         const data = await res.json();
 
-        if (!res.ok || data.error) {
+        if (!res.ok || data.error_code !== 0) {
+            const message = data.error || getErrorMessage(data.error_code);
+            showErrorBanner(data.error_code);
             setProgress(0);
-            setStatus(data.error || "Processing failed.");
-            setProgressInfo(data.processed + "/" + data.total);
+            setStatus(message || "Processing failed.");
+            setProgressInfo((data.processed || 0) + "/" + (data.total || 0));
             return;
         }
 
+        hideErrorBanner();
         setProgress(100);
         setStatus(data.message);
         setProgressInfo(`${data.processed}/${data.total} images processed`);
