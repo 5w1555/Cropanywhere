@@ -1,0 +1,20 @@
+[
+  {
+    "slug": "cropanywhere",
+    "title": "CropAnywhere",
+    "subtitle": "ICC-aware image processing toolkit",
+    "description": "RetinaFace-powered smart cropping with ICC color awareness, background removal, and batch automation for photographers and e-commerce.",
+    "stack": ["Python", "OpenCV", "PyTorch", "RetinaFace", "Gradio"],
+    "image": "/static/images/cropanywhere.png",
+    "github": "https://github.com/5w1555/CropAnywhere"
+  },
+  {
+    "slug": "sanitor",
+    "title": "Sanitor",
+    "subtitle": "Codebase sanity checker",
+    "description": "AST-driven structural analysis that highlights poor naming, vague structure, and maintainability issues — a reflective mirror for developers.",
+    "stack": ["Python", "AST", "CLI", "Modular Design"],
+    "image": "/static/images/sanitor.png",
+    "github": "https://github.com/5w1555/sanitor_project"
+  }
+]

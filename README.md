@@ -1,91 +1,35 @@
-## 🖼️ Cropper Imagery — Python Image Cropping Tool
+# Pro CV Website — FastAPI skeleton
 
-**Cropper Imagery** automatically detects faces and crops images to platform-specific formats (Instagram, LinkedIn, TikTok, etc.).
+This is a minimal FastAPI website skeleton (single-file app + templates/static) to get started.
 
-Built to automate repetitive tasks like:
+Quick start (Windows, cmd.exe):
 
-* Creating profile pictures
-* Preparing images for social media
-* Preprocessing e-commerce visuals
+1. Create and activate a virtual environment
 
----
+   python -m venv .venv
+   .venv\Scripts\activate
 
-### ⚙️ Key Features
+2. Install dependencies
 
-* Face detection with landmark recognition
-* Auto-rotation correction
-* Format presets for multiple platforms
-* Batch processing for folders
-* Single file preview with Gradio
-* Image filters: sharpness, margins, lighting
+   pip install -r requirements.txt
 
----
+3. Run the app (development, auto-reload):
 
-### 📁 Project Structure
+   python main.py
 
-```
-cropper_imagery/
-├── cropper/            # Face-part-based cropping modules
-├── processing.py       # Batch processing script
-├── gradio_app.py       # Quick preview interface
-├── presets.json        # Configurable format presets
-├── README.md
-```
+Or run with uvicorn directly:
 
----
+   python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
 
-### 📂 Installation & Usage
+Open http://127.0.0.1:8000 in your browser.
 
-```bash
-git clone https://github.com/TechBooper/Cropper_imagery_project
-cd Cropper_imagery_project
-pip install -r requirements.txt
-```
+Files added:
+- `main.py` - FastAPI app
+- `templates/index.html` - sample Jinja2 template
+- `static/style.css` - minimal styling
+- `requirements.txt` - dependencies
 
-**To process a folder (requires refactoring the file):**
-Edit `processing.py` as you wish, then run:
-
-```bash
-python processing.py
-```
-
-**To preview a classic use (requires Gradio):**
-
-```bash
-python gradio_app.py
-```
-Go to: http://localhost:7860. Gradio is extremely versatile and can even be used through an API but do as you wish!
-
----
-
-### 🔧 Included Formats
-
-* `instagram_square` → 1:1
-* `linkedin_cover` → 1.91:1
-* `tiktok_story` → 9:16
-* `headbust` → crops top of the face
-* ✅ Fully customizable via `presets.json`
-
----
-
-### 👨‍💻 Author
-
-I'm a Python developer based in Île-de-France.
-
-This is a personal production-oriented tool built entirely solo to help a friend's business.
-
----
-
-### 📅 Roadmap (Next Steps)
-
-* Full GUI (Tkinter or Web UI I don't know yet)
-* Improved filter engine
-* CLI integration
-* Full test coverage
-* Refactored functions (It's still very rough)
-
----
-
-### 📄 License
-
-MIT
+Next steps (optional):
+- Add more routes and templates
+- Add tests
+- Add CI and Dockerfile if you want to deploy

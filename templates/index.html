@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- HERO -->
+<section class="hero">
+  <h1>Hi, I’m Marwane 👋</h1>
+  <p class="subtitle">
+    Python developer focused on automation, computer vision, and reliable tooling.
+    I build modular systems that stay simple under pressure — fast, portable, and ICC-aware.
+  </p>
+  <div class="hero-buttons">
+    <a href="/projects" class="button">Explore My Projects</a>
+    <a href="/about" class="button secondary">About Me</a>
+  </div>
+</section>
+
+<!-- QUICK OVERVIEW -->
+<section class="overview">
+  <h2>What I Build</h2>
+  <p>
+    My work blends practical engineering with curiosity — I design
+    <strong>automation pipelines</strong>, <strong>image-processing toolkits</strong>,
+    and <strong>developer utilities</strong> that solve real bottlenecks in creative and technical workflows.
+  </p>
+
+  <ul class="pillars">
+    <li>🧠 Automation & CI/CD</li>
+    <li>🖼️ Image Processing & Color Management</li>
+    <li>🧩 Developer Tools & Structural Analysis</li>
+  </ul>
+</section>
+
+<!-- FEATURED PROJECTS -->
+<section class="featured-projects">
+  <h2>Highlighted Projects</h2>
+  <div class="grid">
+    <article class="card">
+      <h3>CropAnywhere</h3>
+      <p>An ICC-aware batch cropper and image-filtering toolkit for e-commerce, photography, and AI pipelines.</p>
+      <a href="/projects/cropanywhere" class="button small">Learn more</a>
+    </article>
+
+    <article class="card">
+      <h3>Sanitor</h3>
+      <p>A Python code sanity-checker that exposes structure, naming clarity, and maintainability — a “mirror,” not a linter.</p>
+      <a href="/projects/sanitor" class="button small">Learn more</a>
+    </article>
+
+    <article class="card">
+      <h3>Vision Utilities</h3>
+      <p>Experimental pipelines combining RetinaFace detection, ICC-aware color management, and batch processing performance optimizations.</p>
+      <a href="/projects/vision" class="button small">Learn more</a>
+    </article>
+  </div>
+
+  <p><a href="/projects" class="button secondary">View all projects →</a></p>
+</section>
+
+<!-- DEV SECTION (optional) -->
+<section class="dev-section">
+  <h3>Live API endpoints (dev mode)</h3>
+  <ul>
+    <li><a href="/api/hello">/api/hello</a></li>
+    <li><a href="/api/hello?name=Marwane">/api/hello?name=Marwane</a></li>
+    <li><a href="/docs">/docs (OpenAPI)</a></li>
+  </ul>
+</section>
+
+{% endblock %}

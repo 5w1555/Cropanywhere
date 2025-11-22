@@ -40,10 +40,33 @@ print("Using CPU for model initialization to avoid CUDA NMS errors.")
 # ----------------------------
 # Face Detection Model
 # ----------------------------
-from retinaface.pre_trained_models import get_model
+def get_retina_model(device=torch.device("cpu")):
+    """
+    Load RetinaFace model, preferring local weights for offline execution.
+    """
+    weights_path = os.path.join(os.path.dirname(__file__), "retinaface_resnet50.pt")
 
-model = get_model("resnet50_2020-07-20", max_size=2048, device=device)
-model.eval()
+    # Build the wrapper model
+    model = get_model("resnet50_2020-07-20", max_size=2048, device=device)
+    model.eval()
+
+    # Load pre-saved local weights if available
+    if os.path.exists(weights_path):
+        print(f"Loading local RetinaFace weights from: {weights_path}")
+        try:
+            state = torch.load(weights_path, map_location=device)
+            model.model.load_state_dict(state)
+            print("✅ RetinaFace weights loaded successfully.")
+        except Exception as e:
+            print(f"⚠️  Failed to load local weights ({e}). Will use default pretrained download.")
+    else:
+        print("⚠️  Local RetinaFace weights not found. Downloading from internet…")
+
+    return model
+
+
+# Instantiate it once for the app
+model = get_retina_model(device)
 # ----------------------------
 # HEIC/HEIF Support Setup
 # ----------------------------
@@ -153,25 +176,22 @@ def get_icc_transform(input_icc, mode):
         return None
 
 def process_color_profile(pil_img, metadata):
+    """
+    Preserve the image's original ICC profile if present.
+    No conversion is performed.
+    Ensures output always has a valid ICC tag (SRGB fallback only if none present).
+    """
     input_icc = metadata.get("icc_profile")
-    in_desc = "sRGB"
+
+    # If source had an ICC profile, preserve it exactly.
     if input_icc:
-        try:
-            in_profile = ImageCms.ImageCmsProfile(io.BytesIO(input_icc))
-            in_desc = ImageCms.getProfileDescription(in_profile)
-        except Exception:
-            in_desc = "sRGB"
-    if "Display P3" not in in_desc:
-        print(f"Converting from {in_desc} to Display P3")
-        try:
-            trans = get_icc_transform(input_icc, pil_img.mode)
-            converted = ImageCms.applyTransform(pil_img, trans) if trans else pil_img
-            converted.info["icc_profile"] = DISPLAY_P3_PROFILE
-            return converted
-        except Exception as e:
-            print(f"Profile conversion failed: {e}; returning raw crop.")
-            return pil_img
-    pil_img.info["icc_profile"] = DISPLAY_P3_PROFILE
+        pil_img.info["icc_profile"] = input_icc
+        print("Preserved embedded ICC profile.")
+        return pil_img
+
+    # Otherwise, attach sRGB as a neutral fallback (no transform)
+    print("No ICC profile found — assigning sRGB fallback.")
+    pil_img.info["icc_profile"] = SRGB_PROFILE
     return pil_img
 
 
@@ -438,7 +458,13 @@ def simple_nms(boxes, scores, iou_threshold=0.5):
     
     return torch.tensor(keep, dtype=torch.long)
 
-def get_face_and_landmarks(input_path, conf_threshold=0.3, sharpen=True, apply_rotation=True):
+def get_face_and_landmarks(
+    input_path,
+    conf_threshold=0.3,
+    sharpen=True,
+    apply_rotation=True,
+    model=None,  # ✅ NEW: allow external model injection
+):
     """
     Detect face and landmarks using RetinaFace, with fallback NMS and robust validation.
 
@@ -446,6 +472,13 @@ def get_face_and_landmarks(input_path, conf_threshold=0.3, sharpen=True, apply_r
         tuple: (box, landmarks, cv_img, pil_img, metadata)
                If detection fails, `box` is None.
     """
+    # ✅ Choose model: use shared one if provided, else fallback to global
+    rf_model = model if model is not None else globals().get("model")
+    if rf_model is None:
+        from retinaface.pre_trained_models import get_model
+        rf_model = get_model("resnet50_2020-07-20", max_size=2048, device=device)
+        rf_model.eval()
+
     # Step 1: Load and validate image
     cv_img, pil_img, metadata = read_image(input_path, sharpen=sharpen)
 
@@ -462,7 +495,7 @@ def get_face_and_landmarks(input_path, conf_threshold=0.3, sharpen=True, apply_r
         with torch.no_grad():
             original_nms = ops.nms
             ops.nms = nms_cpu_fallback
-            annotations = model.predict_jsons(
+            annotations = rf_model.predict_jsons(
                 cv_img,
                 confidence_threshold=conf_threshold,
                 nms_threshold=0.4
@@ -475,7 +508,7 @@ def get_face_and_landmarks(input_path, conf_threshold=0.3, sharpen=True, apply_r
         try:
             with torch.no_grad():
                 ops.nms = nms_cpu_fallback
-                annotations = model.predict_jsons(
+                annotations = rf_model.predict_jsons(
                     cv_img,
                     confidence_threshold=0.1,
                     nms_threshold=0.6
@@ -537,10 +570,10 @@ def get_face_and_landmarks(input_path, conf_threshold=0.3, sharpen=True, apply_r
             return box, new_landmarks, rotated_cv, rotated_pil, metadata
         except Exception as e:
             print(f"[Warning] Rotation correction failed: {e}")
-            # fallback to original
             return box, landmarks, cv_img, pil_img, metadata
 
     return box, landmarks, cv_img, pil_img, metadata
+
 
 
 def is_frontal_face(landmarks):

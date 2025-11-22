@@ -1,0 +1,335 @@
+:root {
+  --bg: #0a0e27;
+  --bg-secondary: #12172e;
+  --fg: #e4e4e7;
+  --fg-muted: #a1a1aa;
+  --accent: #06b6d4;
+  --accent-glow: rgba(6, 182, 212, 0.3);
+  --accent2: #f97316;
+  --accent2-glow: rgba(249, 115, 22, 0.3);
+  --border: rgba(255, 255, 255, 0.08);
+  --card-bg: rgba(255, 255, 255, 0.03);
+  --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* --- OVERRIDE WITH PNG EXACTLY AT NATIVE SIZE ------------------------- */
+body.crop-page {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font);
+  color: var(--fg);
+  line-height: 1.7;
+  overflow-x: hidden;
+
+  /* Replace PNG with a stable CSS version */
+  background: linear-gradient(
+      180deg,
+      #00eaff 0%,     /* bright aqua highlight */
+      #0092c7 25%,    /* cyan-blue */
+      #0060a0 48%,    /* mid blue */
+      #043d53 75%,    /* deep teal-blue */
+      #021b25 100%    /* dark teal (matches PNG low end) */
+  );
+
+  background-attachment: fixed;
+}
+
+/* Remove animated gradients completely */
+body.crop-page::before {
+  content: none !important;  /* remove the pseudo-element entirely */
+}
+
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 2rem;
+  background: rgba(10, 14, 39, 0.8);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  transition: all 0.3s ease;
+}
+
+header:hover {
+  background: rgba(10, 14, 39, 0.9);
+  border-bottom-color: var(--accent);
+}
+
+header a {
+  color: var(--fg-muted);
+  text-decoration: none;
+  margin-right: 2rem;
+  font-weight: 500;
+  font-size: 0.95rem;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+header a:hover {
+  color: var(--accent);
+}
+
+header a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  transition: width 0.3s ease;
+}
+
+header a:hover::after {
+  width: 100%;
+}
+
+main {
+  position: relative;
+  max-width: 1000px;
+  margin: 3rem auto;
+  padding: 0 2rem;
+  z-index: 1;
+}
+
+.hero {
+  padding: 3rem 0 4rem;
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: 3.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+  animation: fadeInUp 0.8s ease;
+}
+
+.hero h2 {
+  color: var(--fg-muted);
+  font-size: 1.5rem;
+  font-weight: 400;
+  margin-bottom: 1.5rem;
+  animation: fadeInUp 0.8s ease 0.2s both;
+}
+
+.hero p {
+  font-size: 1.1rem;
+  color: var(--fg-muted);
+  max-width: 650px;
+  margin: 0 auto;
+  animation: fadeInUp 0.8s ease 0.4s both;
+}
+
+section {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  transition: all 0.3s ease;
+}
+
+section:hover {
+  border-color: var(--accent);
+  box-shadow: 0 8px 32px rgba(6, 182, 212, 0.1);
+  transform: translateY(-2px);
+}
+
+section h2 {
+  font-size: 2rem;
+  color: var(--accent);
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+}
+
+section h3 {
+  color: var(--accent2);
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 1.3rem;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: var(--accent2);
+  text-decoration: underline;
+}
+
+code {
+  background: var(--bg-secondary);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.9em;
+  border: 1px solid var(--border);
+}
+
+pre {
+  background: var(--bg-secondary);
+  padding: 1.5rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  margin: 1rem 0;
+}
+
+ul, ol {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+li {
+  margin-bottom: 0.5rem;
+  color: var(--fg-muted);
+}
+
+.cta-button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: white;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(6, 182, 212, 0.3);
+  text-decoration: none;
+}
+
+footer {
+  text-align: center;
+  font-size: 0.9rem;
+  padding: 2rem 1rem;
+  color: var(--fg-muted);
+  margin-top: 4rem;
+  border-top: 1px solid var(--border);
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  header { padding: 1rem; }
+  header a { margin-right: 1rem; font-size: 0.9rem; }
+  main { padding: 0 1rem; margin: 2rem auto; }
+  .hero h1 { font-size: 2.5rem; }
+  .hero h2 { font-size: 1.2rem; }
+  section { padding: 1.5rem; }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
+  align-items: start;
+  margin: 1rem 0 0 0;
+  padding: 0;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 260px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(6, 182, 212, 0.6);
+  box-shadow: 0 18px 40px rgba(6, 182, 212, 0.08);
+}
+
+.card img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  display: block;
+  border-bottom: 1px solid var(--border);
+}
+
+.card h3 {
+  margin: 0.75rem 1rem 0.25rem;
+  font-size: 1.05rem;
+  color: var(--fg);
+}
+
+.card h3 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.card h3 a:hover {
+  color: var(--accent);
+}
+
+.card .subtitle {
+  margin: 0 1rem;
+  color: var(--fg-muted);
+  font-size: 0.9rem;
+}
+
+.card p {
+  margin: 0.5rem 1rem 1rem;
+  line-height: 1.5;
+  color: var(--fg);
+  flex-grow: 1;
+}
+
+.card .button {
+  display: inline-block;
+  margin: 0 1rem 1rem;
+  padding: 0.5rem 0.9rem;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #06121a;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+@media (max-width: 480px) {
+  .card img { height: 120px; }
+  .card h3 { font-size: 1rem; }
+}

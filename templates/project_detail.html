@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+{% if error %}
+  <h2>Project not found</h2>
+{% else %}
+  <article class="project-detail">
+    <img src="{{ project.image }}" alt="{{ project.title }}" class="hero-img"/>
+    <h2>{{ project.title }}</h2>
+    <p class="subtitle">{{ project.subtitle }}</p>
+    <p>{{ project.description }}</p>
+
+    <section>
+      <h3>Tech stack</h3>
+      <ul>
+        {% for tech in project.stack %}
+        <li>{{ tech }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    <p>
+      <a href="{{ project.github }}" class="button" target="_blank">GitHub Repo</a>
+      <a href="/projects" class="button back">← Back</a>
+    </p>
+  </article>
+{% endif %}
+{% endblock %}

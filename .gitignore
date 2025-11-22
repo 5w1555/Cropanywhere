@@ -1,0 +1,109 @@
+# ========================================
+# PYTHON / FASTAPI
+# ========================================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+*.egg
+*.log
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Local settings / environment variables
+.env
+.env.*
+*.env
+!.env.example
+
+# ========================================
+# PROJECT STRUCTURE (FastAPI + Jinja)
+# ========================================
+
+# Compiled templates (if ever Jinja caches)
+**/__pycache__/
+**/.mypy_cache/
+**/.pytest_cache/
+
+# ========================================
+# STATIC FILES (Vanilla JS only)
+# ========================================
+
+# Node modules (if you ever add tooling)
+node_modules/
+
+# Build output (if ever adopted)
+dist/
+build/
+
+# Cache from bundlers (if ever used)
+*.cache/
+.cache/
+
+# ========================================
+# LARGE FILES / ML MODELS
+# ========================================
+# Prevent pushing 100MB+ files to GitHub
+*.pt
+*.pth
+*.onnx
+*.bin
+*.dat
+
+# Common model directories
+models/
+weights/
+checkpoints/
+face_detector/
+ml_models/
+
+# Allow lightweight config files
+!models/*.txt
+!models/*.json
+
+# ========================================
+# OS / EDITOR NOISE
+# ========================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# Linux temp files
+*~
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# ========================================
+# MEDIA / RUNTIME OUTPUT
+# ========================================
+uploads/
+temp/
+tmp/
+*.tmp
+
+# Logs
+*.log
+logs/
+log/
+
+# ========================================
+# TESTING
+# ========================================
+.coverage
+htmlcov/
+pytest_cache/
+junit.xml

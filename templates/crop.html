@@ -1,0 +1,131 @@
+<!-- templates/crop.html -->
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{{ url_for('static', path='css/crop.css') }}">
+<link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  document.body.classList.add("crop-page");
+});
+</script>
+
+<div class="ui-wrapper">
+  <div class="glass-panel">
+
+    <!-- LEFT PANEL – SETTINGS -->
+    <div class="panel left-panel">
+      <h2 class="panel-title">Crop Settings</h2>
+
+      <form id="crop-form" enctype="multipart/form-data">
+
+        <!-- Preset -->
+        <label class="label" for="preset">Preset</label>
+        <select id="preset" name="preset_label">
+          {% for label in preset_labels %}
+          <option value="{{ label }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+
+        <!-- Upload -->
+        <label class="label">Upload</label>
+
+        <div class="upload-box" id="drop-zone">
+        <label for="file-input">
+            Drop File(s) Here<br>or<br>Click to Upload
+        </label>
+        </div>
+
+        <input
+        id="file-input"
+        type="file"
+        name="files"
+        accept="image/*"
+        multiple
+        hidden
+        required
+        >
+
+
+        <!-- Margin -->
+        <label class="label" for="crop-margin">Margin</label>
+        <input id="crop-margin" type="range" min="0" max="100" value="30">
+
+        <!-- Aspect Ratio -->
+        <label class="label" for="aspect">Aspect Ratio</label>
+        <select id="aspect" name="aspect_ratio">
+          <option value="none">None</option>
+          <option value="1:1">1×1</option>
+          <option value="4:5">4×5</option>
+          <option value="1.91">1.91</option>
+          <option value="9:16">9×16</option>
+          <option value="3:2">3×2</option>
+          <option value="5:4">5×4</option>
+          <option value="16:9">16×9</option>
+        </select>
+
+        <!-- Auto-Rotate -->
+        <div style="margin-top: 14px; display:flex; align-items:center; gap:8px;">
+          <input type="checkbox" id="rotate" checked>
+          <label for="rotate" class="label" style="margin:0;">Auto-Rotate</label>
+        </div>
+
+        <!-- Visual Effects -->
+        <label class="label" style="margin-top:18px;" for="filter">Visual Effects</label>
+        <select id="filter" name="filter_name">
+          <option value="None">None</option>
+          <option value="Brightness">Brightness</option>
+          <option value="Contrast">Contrast</option>
+          <option value="Blur">Blur</option>
+          <option value="Edge Detection">Edge Detection</option>
+          <option value="Sepia">Sepia</option>
+        </select>
+
+        <!-- Intensity -->
+        <label class="label" style="margin-top:18px;" for="intensity">Intensity</label>
+        <input id="intensity" type="range" min="0" max="100" value="50">
+
+        <!-- Buttons -->
+        <div style="display:flex; gap:10px; margin-top:22px;">
+          <button type="button" id="preview-btn" class="download-btn" style="flex:1;">
+            Preview
+          </button>
+          <button type="button" id="process-btn" class="download-btn" style="flex:1;">
+            Process All
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- RIGHT PANEL – PREVIEW & PROGRESS -->
+    <div class="panel right-panel">
+      <h2 class="panel-title small">Before & After</h2>
+
+      <div id="preview-box" class="preview-box">
+        <p class="placeholder">Your cropped image will appear here</p>
+      </div>
+
+      <h2 class="panel-title small" style="margin-top:30px;">Progress Status</h2>
+
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+
+      <p id="status-text" style="font-size:0.9rem; margin-top:4px; opacity:0.9;"></p>
+      <p id="progress-info" style="font-size:0.85rem; opacity:0.75;"></p>
+
+      <button class="download-btn" id="download-btn" disabled style="margin-top:18px;">
+        Download Processed Images
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script src="/static/js/crop.js"></script>
+
+{% endblock %}

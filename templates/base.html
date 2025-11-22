@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ title or "Marwane Wafik – Engineer" }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}" />
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', path='favicon.ico') }}">
+  </head>
+
+  <body>
+    <header>
+      <h1><a href="/">Marwane Wafik</a></h1>
+
+      <nav>
+        <a href="/">Home</a>
+        <a href="/projects">Projects</a>
+        <a href="/about">About</a>
+        <a href="/crop">CropAnyware</a>
+        <a href="/api/hello">API</a>
+      </nav>
+    </header>
+
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+      <p>© {{ year }} Marwane Wafik | Built with FastAPI + Jinja2</p>
+      <p class="social">
+        <a href="https://github.com/5w1555" target="_blank">GitHub</a>
+        ·
+        <a href="mailto:contact@5w1555.dev">Contact</a>
+      </p>
+    </footer>
+  </body>
+</html>
