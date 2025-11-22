@@ -30,6 +30,18 @@ document.addEventListener("DOMContentLoaded", () => {
           {% endfor %}
         </select>
 
+        <!-- Custom Presets -->
+        <label class="label" for="preset-name" style="margin-top:14px;">Preset name</label>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <input id="preset-name" type="text" placeholder="My custom preset" style="flex:1;">
+          <button type="button" id="save-preset-btn" class="download-btn" style="flex:0 0 auto;">Save preset</button>
+        </div>
+
+        <label class="label" for="saved-presets" style="margin-top:14px;">Load preset</label>
+        <select id="saved-presets">
+          <option value="">Select a saved preset</option>
+        </select>
+
         <!-- Upload -->
         <label class="label">Upload</label>
 
@@ -130,6 +142,8 @@ document.addEventListener("DOMContentLoaded", () => {
   </div>
 </div>
 
+<script src="/static/js/presets.js"></script>
 <script src="/static/js/crop.js"></script>
+
 
 {% endblock %}
