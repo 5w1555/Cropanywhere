@@ -1,35 +1,34 @@
-# Pro CV Website — FastAPI skeleton
+<p align="center">
+  <img src="static/favicon.ico" width="64" alt="CropAnyware logo"/>
+</p>
 
-This is a minimal FastAPI website skeleton (single-file app + templates/static) to get started.
+<h1 align="center">CropAnyware</h1>
 
-Quick start (Windows, cmd.exe):
+## Overview
 
-1. Create and activate a virtual environment
+CropAnyware is a fast, fault-tolerant, face-aware cropping engine with a lightweight FastAPI web interface.
 
-   python -m venv .venv
-   .venv\Scripts\activate
+It provides intelligent automatic cropping using RetinaFace detection and tuned strategies (frontal, profile, bust, chin-weighted), with accurate color handling and robust performance on imperfect real-world images.
 
-2. Install dependencies
+The project functions as:
 
-   pip install -r requirements.txt
+- a **self-hosted image processing toolkit**
+- the core of a **future SaaS service**
 
-3. Run the app (development, auto-reload):
+Compact architecture. No Node. No build pipeline. Deploys anywhere.
 
-   python main.py
+---
 
-Or run with uvicorn directly:
+## Features
 
-   python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
+- RetinaFace-based face detection  
+- Smart cropping strategies (frontal, profile, bust, chin-weighted)  
+- Batch-safe and fault-tolerant pipeline  
+- ICC-aware, color-accurate handling  
+- HEIC/RAW support via Pillow plugins  
+- FastAPI backend + Jinja2 templates  
+- Vanilla JS front-end  
+- Preview + result export  
+- REST API for automation  
 
-Open http://127.0.0.1:8000 in your browser.
-
-Files added:
-- `main.py` - FastAPI app
-- `templates/index.html` - sample Jinja2 template
-- `static/style.css` - minimal styling
-- `requirements.txt` - dependencies
-
-Next steps (optional):
-- Add more routes and templates
-- Add tests
-- Add CI and Dockerfile if you want to deploy
+---
