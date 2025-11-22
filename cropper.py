@@ -67,6 +67,22 @@ def get_retina_model(device=torch.device("cpu")):
 
 # Instantiate it once for the app
 model = get_retina_model(device)
+
+def heic_available():
+    """
+    Return True if pillow_heif is installed AND both opener/saver are registered.
+    """
+    try:
+        import pillow_heif
+        if not hasattr(pillow_heif, "read_heif"):
+            return False
+        # check saver
+        if not hasattr(pillow_heif, "write_heif") and not hasattr(pillow_heif, "HeifFile"):
+            return False
+        return True
+    except Exception:
+        return False
+
 # ----------------------------
 # HEIC/HEIF Support Setup
 # ----------------------------
@@ -213,18 +229,37 @@ def convert_to_displayp3(pil_img, input_icc=None):
 # Image I/O, Face Detection, and Cropping
 # ----------------------------
 def save_as_heic_fallback(cropped_img, output_path):
+    """
+    Attempt to save as HEIC, but first verify pillow_heif availability.
+    If unavailable, return False so caller can fall back automatically.
+    """
+    try:
+        import pillow_heif
+    except ImportError:
+        print("⚠️ HEIC save skipped: pillow_heif not installed.")
+        return False
+
+    if not heic_available():
+        print("⚠️ HEIC save skipped: pillow_heif not fully registered.")
+        return False
+
     try:
         if cropped_img.mode != "RGB":
             cropped_img = cropped_img.convert("RGB")
+
         heif_file = pillow_heif.HeifFile()
         heif_file.add_image(
-            cropped_img.tobytes(), width=cropped_img.width, height=cropped_img.height
+            cropped_img.tobytes(),
+            width=cropped_img.width,
+            height=cropped_img.height
         )
-        heif_file.save(output_path, quality=100)
+        heif_file.save(output_path, quality=95)
         return True
+
     except Exception as e:
-        print(f"HEIC save failed: {e}")
+        print(f"⚠️ HEIC save failed: {e}")
         return False
+
 
 
 try:
@@ -246,9 +281,11 @@ def read_image(input_path, max_dim=1024, sharpen=True, enhance_lighting=False):
     Returns:
         tuple: (OpenCV image, PIL image, metadata dictionary)
     """
-    # --- RAW File Handling ---
-    raw_extensions = ('.cr2', '.nef', '.arw', '.dng', '.orf', '.raf')
-    if input_path.lower().endswith(raw_extensions):
+    lower_path = input_path.lower()
+    # --- RAW/HEIF Extension Normalization ---
+    raw_extensions = (".cr2", ".nef", ".arw", ".dng", ".orf", ".raf")
+    heif_extensions = (".heic", ".heif")
+    if lower_path.endswith(raw_extensions):
         try:
             with rawpy.imread(input_path) as raw:
                 rgb = raw.postprocess()
@@ -271,7 +308,10 @@ def read_image(input_path, max_dim=1024, sharpen=True, enhance_lighting=False):
             return None, None, {}
 
     # --- HEIC/HEIF Handling ---
-    if input_path.lower().endswith(".heic"):
+    if lower_path.endswith(heif_extensions):
+        if pillow_heif is None:
+            print("pillow-heif not installed; cannot decode HEIC/HEIF input.")
+            return None, None, {}
         try:
             heif_file = pillow_heif.read_heif(input_path)
             pil_img = Image.frombytes(
@@ -595,11 +635,43 @@ def is_frontal_face(landmarks):
 # Precompute format mapping to avoid repeated dictionary lookups in save_image
 # Why: Reduces CPU overhead by computing the mapping once at module level, saving ~0.1ms per call
 FORMAT_MAP = {
+    # --- HEIC/HEIF family ---
     "heic": "HEIC",
+    "heics": "HEIC",
+    "heif": "HEIC",
+    "heifs": "HEIC",
+    "hif": "HEIC",
+    "avif": "HEIC",     # AVIF decodes through libheif; fallback to HEIC pipeline
+    "avifs": "HEIC",
+
+    # --- TIFF family ---
     "tiff": "TIFF",
     "tif": "TIFF",
+
+    # --- JPEG family ---
     "jpg": "JPEG",
-    "jpeg": "JPEG"
+    "jpeg": "JPEG",
+    "jpe": "JPEG",
+    "jfif": "JPEG",
+    "pjpeg": "JPEG",
+
+    # --- PNG ---
+    "png": "PNG",
+
+    # --- Web formats ---
+    "webp": "WEBP",
+    "bmp": "BMP",
+    "gif": "GIF",   # non-animated only; animated → convert to PNG
+
+    # --- RAW → TIFF fallback ---
+    "cr2": "TIFF",
+    "nef": "TIFF",
+    "arw": "TIFF",
+    "dng": "TIFF",
+    "orf": "TIFF",
+    "raf": "TIFF",
+    "rw2": "TIFF",
+    "srw": "TIFF",
 }
 
 def save_image(cropped_img, output_path, metadata, output_format=None, jpeg_quality=95):
