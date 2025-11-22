@@ -676,98 +676,137 @@ FORMAT_MAP = {
 
 def save_image(cropped_img, output_path, metadata, output_format=None, jpeg_quality=95):
     """
-    Save cropped image with high quality preservation, optimized for I/O speed, defaulting to lossless PNG.
-    Args:
-        cropped_img (PIL.Image): Image to save.
-        output_path (str): Save path.
-        metadata (dict): Image metadata (e.g., EXIF, ICC).
-        output_format (str, optional): Force output format ("PNG", "TIFF", "HEIC", "JPEG").
-        jpeg_quality (int): JPEG quality (80–100, default 95) if format is JPEG.
-    Returns:
-        bool: True if saved successfully, False otherwise.
+    Unified, safe, extensible image saving pipeline.
     """
-    try:
-        outdir = os.path.dirname(output_path)
+
+    def ensure_directory(path):
+        outdir = os.path.dirname(path)
         if outdir:
             os.makedirs(outdir, exist_ok=True)
-        file_ext = os.path.splitext(output_path)[1].lower()
 
-        # Determine format: use output_format if specified, else infer from file_ext with precomputed map
-        # Why: Uses FORMAT_MAP to avoid dictionary creation per call, slightly faster lookup
-        if output_format:
-            fmt = output_format.upper()
+    # Normalized, extended format alias map
+    FORMAT_MAP = {
+        "heic": "HEIC",
+        "heics": "HEIC",
+        "heif": "HEIC",
+        "heifs": "HEIC",
+        "hif": "HEIC",
+        "jpg": "JPEG",
+        "jpeg": "JPEG",
+        "jpe": "JPEG",
+        "tif": "TIFF",
+        "tiff": "TIFF",
+        "dng": "DNG",
+        "png": "PNG",
+    }
+
+    def determine_format(path, forced_format):
+        """
+        Resolve final format using forced override > extension > PNG fallback.
+        Handles normalization.
+        """
+        if forced_format:
+            fmt = forced_format.lower().strip()
         else:
-            fmt = FORMAT_MAP.get(file_ext.lstrip("."), "PNG")
+            ext = os.path.splitext(path)[1].lower().lstrip(".")
+            fmt = ext
 
-        # Convert to RGB for formats requiring it, before format-specific logic
-        # Why: Moved outside if/elif to avoid redundant checks, saving ~0.2ms for HEIC/JPEG
-        if fmt in ("HEIC", "JPEG") and cropped_img.mode != "RGB":
-            cropped_img = cropped_img.convert("RGB")
+        final_fmt = FORMAT_MAP.get(fmt)
+        if final_fmt is None:
+            print(f"[Warn] Unknown extension '{fmt}', falling back to PNG.")
+            final_fmt = "PNG"
 
-        # Prepare minimal metadata to reduce write overhead
-        # Why: Only include ICC profile and EXIF if present, avoiding unnecessary metadata processing
-        save_metadata = {"icc_profile": DISPLAY_P3_PROFILE}
+        # HEIC safety gate
+        if final_fmt == "HEIC":
+            if pillow_heif is None or not hasattr(pillow_heif, "register_heif_opener"):
+                print("[Warn] HEIC saver unavailable — falling back to PNG.")
+                final_fmt = "PNG"
+
+        return final_fmt
+
+    def build_save_metadata(metadata):
+        save_meta = {"icc_profile": DISPLAY_P3_PROFILE}
         if "exif" in metadata:
-            save_metadata["exif"] = metadata["exif"]
+            save_meta["exif"] = metadata["exif"]
+        return save_meta
 
-        if fmt == "HEIC":
-            # Save HEIC with optimized quality and reduced chroma for faster encoding
-            # Why: Lowered quality to 90 (still near-lossless) and chroma to 420 to reduce write time by ~10–15%
-            cropped_img.save(
-                output_path,
+    def save_heic(img, path, save_meta):
+        try:
+            img.save(
+                path,
                 format="HEIF",
                 quality=90,
                 save_all=True,
                 matrix_coefficients=0,
                 chroma=420,
-                icc_profile=DISPLAY_P3_PROFILE,
+                icc_profile=save_meta.get("icc_profile"),
             )
-        elif fmt == "TIFF":
-            # Use DEFLATE compression instead of ZIP for faster lossless saving
-            # Why: DEFLATE is 10–20% faster than ZIP for TIFF writes, with minimal file size increase
-            cropped_img.save(
-                output_path,
-                format="TIFF",
-                compression="deflate",
-                **save_metadata
-            )
-        elif fmt == "DNG":
-            try:
-                import pydng
-                pydng.write_dng(cropped_img, output_path, metadata=metadata, icc_profile=DISPLAY_P3_PROFILE)
-            except ImportError:
-                # Fallback to TIFF with DEFLATE compression
-                # Why: Consistent with TIFF optimization, ensures speed in fallback case
-                print("pydng not installed; falling back to TIFF.")
-                fallback_path = os.path.splitext(output_path)[0] + ".tiff"
-                cropped_img.save(
-                    fallback_path,
-                    format="TIFF",
-                    compression="deflate",
-                    **save_metadata
-                )
-        elif fmt == "JPEG":
-            # Use OpenCV for faster JPEG saving instead of PIL
-            # Why: OpenCV's imwrite is 20–30% faster than PIL for JPEG, critical for e-commerce/social media
-            cv_img = cv2.cvtColor(np.array(cropped_img), cv2.COLOR_RGB2BGR)
-            cv2.imwrite(output_path, cv_img, [int(cv2.IMWRITE_JPEG_QUALITY), jpeg_quality])
-            # Embed ICC profile and EXIF using PIL afterward
-            # Why: OpenCV doesn't support metadata, so re-save with PIL to ensure quality preservation
-            with Image.open(output_path) as img:
-                img.save(output_path, format="JPEG", quality=jpeg_quality, **save_metadata)
-        else:  # Default to PNG
-            # Lower compress_level to 4 for faster PNG saving
-            # Why: compress_level=4 is 10–15% faster than 6, with ~5% larger files, prioritizing I/O speed
-            cropped_img.save(
-                output_path,
-                format="PNG",
-                compress_level=4,
-                **save_metadata
-            )
+            return True
+        except Exception as e:
+            print(f"[Err] HEIC save failed: {e}. Falling back to PNG.")
+            return save_png(img, path + ".png", save_meta)
+
+    def save_tiff(img, path, save_meta):
+        img.save(
+            path,
+            format="TIFF",
+            compression="deflate",
+            **save_meta,
+        )
         return True
+
+    def save_dng(img, path, save_meta):
+        try:
+            import pydng
+            pydng.write_dng(img, path, metadata=metadata, icc_profile=save_meta.get("icc_profile"))
+            return True
+        except ImportError:
+            print("pydng not installed; falling back to TIFF.")
+            fallback = os.path.splitext(path)[0] + ".tiff"
+            return save_tiff(img, fallback, save_meta)
+
+    def save_jpeg(img, path, save_meta):
+        cv_img = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+        cv2.imwrite(path, cv_img, [int(cv2.IMWRITE_JPEG_QUALITY), jpeg_quality])
+        # Add ICC + EXIF using PIL
+        with Image.open(path) as reopened:
+            reopened.save(path, format="JPEG", quality=jpeg_quality, **save_meta)
+        return True
+
+    def save_png(img, path, save_meta):
+        img.save(
+            path,
+            format="PNG",
+            compress_level=4,
+            **save_meta,
+        )
+        return True
+
+    format_handlers = {
+        "HEIC": save_heic,
+        "TIFF": save_tiff,
+        "DNG": save_dng,
+        "JPEG": save_jpeg,
+        "PNG": save_png,
+    }
+
+    try:
+        ensure_directory(output_path)
+        fmt = determine_format(output_path, output_format)
+
+        # RGB-conversion guard
+        if fmt in ("HEIC", "JPEG") and cropped_img.mode != "RGB":
+            cropped_img = cropped_img.convert("RGB")
+
+        save_metadata = build_save_metadata(metadata)
+
+        handler = format_handlers.get(fmt, save_png)
+        return handler(cropped_img, output_path, save_metadata)
+
     except Exception as e:
         print(f"Save error: {e}")
         return False
+
 
 
 def crop_frontal_image(pil_img, landmarks=None, metadata={}, margin=20, lip_offset=50):
