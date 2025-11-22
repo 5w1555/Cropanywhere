@@ -1,10 +1,12 @@
 # main.py
 
+from contextlib import asynccontextmanager
 from fastapi.responses import FileResponse
 from fastapi import FastAPI, Request, UploadFile, File, Form
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from datetime import datetime, timedelta
 import uvicorn
 import logging
 from time import time
@@ -27,8 +29,6 @@ from cropper import (
     apply_filter,
 )
 
-app = FastAPI(title="Marwane Wafik - Portfolio")
-
 BASE_DIR = Path(__file__).parent
 STATIC_DIR = BASE_DIR / "static"
 DATA_PATH = BASE_DIR / "data" / "projects.json"
@@ -38,10 +38,53 @@ OUTPUT_DIR = STATIC_DIR / "outputs"
 PREVIEW_DIR.mkdir(parents=True, exist_ok=True)
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
+logger = logging.getLogger("uvicorn.error")
+
+
+# Retention (in hours) for generated assets; keep downloads longer than previews
+PREVIEW_RETENTION_HOURS = int(os.getenv("PREVIEW_RETENTION_HOURS", "48"))
+OUTPUT_RETENTION_HOURS = int(os.getenv("OUTPUT_RETENTION_HOURS", "168"))  # one week
+
+
+def cleanup_directory(path: Path, max_age_hours: int) -> None:
+    """Remove files older than the retention window."""
+
+    if max_age_hours <= 0:
+        logger.info(
+            "Skipping cleanup for %s because retention is disabled (<=0 hours)", path
+        )
+        return
+
+    cutoff = datetime.utcnow() - timedelta(hours=max_age_hours)
+    removed = 0
+    for item in path.iterdir():
+        try:
+            mtime = datetime.utcfromtimestamp(item.stat().st_mtime)
+            if mtime < cutoff:
+                if item.is_dir():
+                    shutil.rmtree(item, ignore_errors=True)
+                else:
+                    item.unlink(missing_ok=True)
+                removed += 1
+        except Exception as exc:
+            logger.warning("Failed to evaluate %s for cleanup: %s", item, exc)
+    if removed:
+        logger.info("Cleaned %s old asset(s) from %s", removed, path)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Run startup/shutdown tasks using FastAPI's lifespan context."""
+
+    cleanup_directory(PREVIEW_DIR, PREVIEW_RETENTION_HOURS)
+    cleanup_directory(OUTPUT_DIR, OUTPUT_RETENTION_HOURS)
+    yield
+
+
+app = FastAPI(title="Marwane Wafik - Portfolio", lifespan=lifespan)
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
-
-logger = logging.getLogger("uvicorn.error")
 
 
 def load_projects():
@@ -127,6 +170,13 @@ async def about(request: Request):
             "year": 2025,
         },
     )
+
+@app.on_event("startup")
+async def startup_cleanup():
+    """Remove stale preview and output artifacts on startup."""
+
+    cleanup_directory(PREVIEW_DIR, PREVIEW_RETENTION_HOURS)
+    cleanup_directory(OUTPUT_DIR, OUTPUT_RETENTION_HOURS)
 
 
 @app.get("/api/hello")
@@ -379,6 +429,8 @@ async def api_crop_process(
     zip_path = shutil.make_archive(str(zip_base), "zip", job_dir)
 
     zip_url = f"/static/outputs/{Path(zip_path).name}"
+    
+    shutil.rmtree(job_dir, ignore_errors=True)
 
     return {
         "message": f"✅ Processed {processed}/{total}!",
