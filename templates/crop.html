@@ -22,12 +22,12 @@ document.addEventListener("DOMContentLoaded", () => {
         <!-- Backend Preset -->
         <label class="label" for="preset">Preset</label>
         <select id="preset" name="preset_label">
-          {% for label in preset_labels %}
-          <option value="{{ label }}">{{ label }}</option>
+          {% for item in preset_labels %}
+            <option value="{{ item.key }}">{{ item.label }}</option>
           {% endfor %}
         </select>
 
-        <!-- User Presets (localStorage only) -->
+        <!-- User Presets -->
         <label class="label" for="preset-name" style="margin-top:14px;">Preset name</label>
         <div style="display:flex; gap:10px; align-items:center;">
           <input id="preset-name" type="text" placeholder="My custom preset" style="flex:1;">
@@ -41,22 +41,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <!-- Upload -->
         <label class="label">Upload</label>
-
         <div class="upload-box" id="drop-zone">
           <label for="file-input">
             Drop File(s) Here<br>or<br>Click to Upload
           </label>
         </div>
 
-        <input
-          id="file-input"
-          type="file"
-          name="files"
-          accept="image/*"
-          multiple
-          hidden
-          required
-        >
+        <input id="file-input" type="file" name="files" accept="image/*" multiple hidden required>
 
         <!-- Margin -->
         <label class="label" for="crop-margin">Margin</label>
@@ -76,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
         </select>
 
         <!-- Auto-Rotate -->
-        <div style="margin-top: 14px; display:flex; align-items:center; gap:8px;">
+        <div style="margin-top:14px; display:flex; align-items:center; gap:8px;">
           <input type="checkbox" id="rotate" checked>
           <label for="rotate" class="label" style="margin:0;">Auto-Rotate</label>
         </div>
@@ -98,53 +89,53 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <!-- Buttons -->
         <div style="display:flex; gap:10px; margin-top:22px;">
-          <button type="button" id="preview-btn" class="download-btn" style="flex:1;">
-            Preview
-          </button>
-          <button type="button" id="process-btn" class="download-btn" style="flex:1;">
-            Process All
-          </button>
+          <button type="button" id="preview-btn" class="download-btn" style="flex:1;">Preview</button>
+          <button type="button" id="process-btn" class="download-btn" style="flex:1;">Process All</button>
         </div>
 
       </form>
     </div>
 
-    <!-- RIGHT PANEL – PREVIEW + PROGRESS -->
-     
+    <!-- RIGHT PANEL – PREVIEW + VARIANTS + PROGRESS -->
     <div class="panel right-panel">
-      <h2 class="panel-title small">Before & After</h2>
 
+      <!-- BEFORE / AFTER -->
+      <h2 class="panel-title small">Before & After</h2>
       <div id="preview-box" class="preview-box">
         <p class="placeholder">Your cropped image will appear here</p>
       </div>
 
-      <div id="error-banner" style="display:none;color:red;font-weight:bold;margin-top:10px;"></div>
+      <!-- VARIANTS -->
+      <h2 class="panel-title small" style="margin-top:28px;">Crop Variants</h2>
+      <div id="variants-box" class="variants-box">
+        <p class="placeholder">Preview first to see variants</p>
+      </div>
 
-      <h2 class="panel-title small" style="margin-top:30px;">Crop Variants</h2>
-      <div id="variant-grid" style="
-    display:flex;
-    flex-wrap:wrap;
-    gap:12px;
-    margin-bottom:18px;
-"></div>
+      <!-- ERROR -->
+      <div id="error-banner"
+           style="display:none; color:#ff7a7a; font-weight:bold; margin-top:10px;"></div>
 
+      <!-- PROGRESS -->
+      <h2 class="panel-title small" style="margin-top:30px;">Progress Status</h2>
       <div class="progress-bar">
         <div class="progress-fill" id="progress-fill"></div>
       </div>
 
-      <p id="status-text" style="font-size:0.9rem; margin-top:4px; opacity:0.9;"></p>
-      <p id="progress-info" style="font-size:0.85rem; opacity:0.75;"></p>
+      <p id="status-text" class="status-text"></p>
+      <p id="progress-info" class="progress-info"></p>
 
+      <!-- DOWNLOAD -->
       <button class="download-btn" id="download-btn" disabled style="margin-top:18px;">
         Download Processed Images
       </button>
+
     </div>
 
   </div>
 </div>
 
 <script id="builtin-presets" type="application/json">
-    {{ presets_json | tojson }}
+  {{ presets_json | tojson }}
 </script>
 
 <script src="/static/js/crop.js"></script>

@@ -1,17 +1,5 @@
 # services/presets.py
 
-from cropper import (
-    auto_crop,
-    head_bust_crop,
-    crop_frontal_image,
-    crop_profile_image,
-    crop_chin_image,
-    crop_nose_image,
-    crop_below_lips_image,
-)
-
-# services/presets.py
-
 """
 Preset configuration for Cropanyware.
 
@@ -135,4 +123,25 @@ PRESETS = {
         "rotate": True,
     },
 }
+
+
+
+from typing import List, Dict
+
+def get_preset_labels() -> List[Dict[str, str]]:
+    """
+    Returns presets formatted for UI dropdown:
+    [
+      {"key": "auto", "label": "Auto Crop"},
+      {"key": "headbust", "label": "Head & Bust"},
+      ...
+    ]
+    """
+    return [
+        {
+            "key": key,
+            "label": cfg.get("label", key.replace("_", " ").title())
+        }
+        for key, cfg in PRESETS.items()
+    ]
 

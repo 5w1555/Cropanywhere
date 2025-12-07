@@ -4,9 +4,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from routers.preview_router import preview_router
-
-
+from services.presets import PRESETS, get_preset_labels
 
 from datetime import datetime, timedelta
 from time import time
@@ -25,6 +23,8 @@ from PIL import Image, ImageOps
 from services.crop_pipeline import crop_image
 from services.presets import PRESETS
 from config import get_preset_labels  # UI display
+
+
 
 from error_codes import (
     ERR_CROP_FAIL,
@@ -94,7 +94,9 @@ app = FastAPI(title="Marwane Wafik - Portfolio", lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
+from routers.preview_router import preview_router
 app.include_router(preview_router)
+
 
 
 # --------------------------------------------------------------------
@@ -183,7 +185,6 @@ async def startup_cleanup():
 async def api_hello(name: str = "Marwane"):
     return {"message": f"Hello, {name}!"}
 
-
 @app.get("/crop", response_class=HTMLResponse)
 async def crop_page(request: Request):
     return templates.TemplateResponse(
@@ -192,10 +193,11 @@ async def crop_page(request: Request):
             "request": request,
             "title": "CropAnywhere",
             "year": 2025,
-            "preset_labels": get_preset_labels(),
-            "presets_json": PRESETS,
+            "preset_labels": get_preset_labels(),  
+            "presets_json": PRESETS,               
         },
     )
+
 
 
 # --------------------------------------------------------------------

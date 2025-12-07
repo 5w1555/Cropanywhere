@@ -224,34 +224,40 @@ if (previewBtn) {
             return;
         }
 
-        const variantGrid = document.getElementById("variant-grid");
-        variantGrid.innerHTML = `<p>Generating previews...</p>`;
+        hideErrorBanner();
+        setProgress(20);
+        setStatus("Generating crop variants...");
+
+        const variantsBox = document.getElementById("variants-box");
+        variantsBox.innerHTML = `<p class="placeholder">Generating previews...</p>`;
 
         const formData = new FormData();
-        formData.append("file", files[0]); // ONLY the first image for preview
+        formData.append("file", files[0]);
 
-        // Call lightweight endpoint
-        const res = await fetch("/preview/", {
+        const res = await fetch("/preview", { // <-- fixed endpoint
             method: "POST",
             body: formData,
         });
 
         const data = await res.json();
-        variantGrid.innerHTML = "";
+        variantsBox.innerHTML = "";
 
         if (!data.ok) {
-            variantGrid.innerHTML = `<p style="color:#f55;">${data.message}</p>`;
+            variantsBox.innerHTML = `<p style="color:#f55;">${data.message}</p>`;
+            setProgress(0);
+            setStatus("Preview failed");
             return;
         }
 
         window.selectedMethod = null;
+        setStatus("Select a crop variant");
 
-        // Render thumbnails
         Object.entries(data.variants).forEach(([method, url]) => {
             const img = document.createElement("img");
             img.src = url;
             img.className = "preview-thumb";
             img.dataset.method = method;
+
             img.style.width = "160px";
             img.style.cursor = "pointer";
             img.style.border = "3px solid transparent";
@@ -259,13 +265,16 @@ if (previewBtn) {
 
             img.onclick = () => {
                 document.querySelectorAll(".preview-thumb")
-                    .forEach(x => (x.style.borderColor = "transparent"));
+                    .forEach(x => x.style.borderColor = "transparent");
                 img.style.borderColor = "#4CAF50";
                 window.selectedMethod = method;
+                setStatus(`Selected: ${method}`);
             };
 
-            variantGrid.appendChild(img);
+            variantsBox.appendChild(img);
         });
+
+        setProgress(100);
     });
 }
 
