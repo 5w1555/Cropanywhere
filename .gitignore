@@ -29,9 +29,15 @@ env/
 **/__pycache__/
 **/.mypy_cache/
 **/.pytest_cache/
-static/previews/
+
 static/outputs/
 static/results/
+# Ignore runtime preview outputs (never commit)
+
+static/previews/*
+!static/previews/.gitkeep
+
+
 
 
 # ========================================

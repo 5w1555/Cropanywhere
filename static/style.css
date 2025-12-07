@@ -333,3 +333,61 @@ footer {
   .card img { height: 120px; }
   .card h3 { font-size: 1rem; }
 }
+
+/* ---------------------------------------
+   CROP VARIANTS GRID
+--------------------------------------- */
+
+.variants-box {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 18px;
+  margin-top: 18px;
+  padding: 8px 0;
+}
+
+.variant {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.variant:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+  box-shadow: 0 12px 24px var(--accent-glow);
+}
+
+.variant.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 12px var(--accent-glow), 0 6px 16px rgba(0,0,0,0.45);
+  transform: translateY(-6px);
+}
+
+.variant img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+}
+
+.variant-label {
+  padding: 0.4rem 0.6rem;
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--fg-muted);
+  transition: color 0.2s ease;
+}
+
+.variant:hover .variant-label {
+  color: var(--accent);
+}
+
+/* When selected, label uses accent2 for contrast */
+.variant.selected .variant-label {
+  color: var(--accent2);
+}

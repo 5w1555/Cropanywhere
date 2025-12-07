@@ -1,7 +1,4 @@
-<!-- templates/crop.html -->
-
 {% extends "base.html" %}
-
 {% block content %}
 
 <link rel="stylesheet" href="{{ url_for('static', path='css/crop.css') }}">
@@ -22,7 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       <form id="crop-form" enctype="multipart/form-data">
 
-        <!-- Preset -->
+        <!-- Backend Preset -->
         <label class="label" for="preset">Preset</label>
         <select id="preset" name="preset_label">
           {% for label in preset_labels %}
@@ -30,11 +27,11 @@ document.addEventListener("DOMContentLoaded", () => {
           {% endfor %}
         </select>
 
-        <!-- Custom Presets -->
+        <!-- User Presets (localStorage only) -->
         <label class="label" for="preset-name" style="margin-top:14px;">Preset name</label>
         <div style="display:flex; gap:10px; align-items:center;">
           <input id="preset-name" type="text" placeholder="My custom preset" style="flex:1;">
-          <button type="button" id="save-preset-btn" class="download-btn" style="flex:0 0 auto;">Save preset</button>
+          <button type="button" id="save-preset-btn" class="download-btn">Save preset</button>
         </div>
 
         <label class="label" for="saved-presets" style="margin-top:14px;">Load preset</label>
@@ -46,21 +43,20 @@ document.addEventListener("DOMContentLoaded", () => {
         <label class="label">Upload</label>
 
         <div class="upload-box" id="drop-zone">
-        <label for="file-input">
+          <label for="file-input">
             Drop File(s) Here<br>or<br>Click to Upload
-        </label>
+          </label>
         </div>
 
         <input
-        id="file-input"
-        type="file"
-        name="files"
-        accept="image/*"
-        multiple
-        hidden
-        required
+          id="file-input"
+          type="file"
+          name="files"
+          accept="image/*"
+          multiple
+          hidden
+          required
         >
-
 
         <!-- Margin -->
         <label class="label" for="crop-margin">Margin</label>
@@ -69,10 +65,10 @@ document.addEventListener("DOMContentLoaded", () => {
         <!-- Aspect Ratio -->
         <label class="label" for="aspect">Aspect Ratio</label>
         <select id="aspect" name="aspect_ratio">
-          <option value="none">None</option>
+          <option value="None">None</option>
           <option value="1:1">1×1</option>
           <option value="4:5">4×5</option>
-          <option value="1.91">1.91</option>
+          <option value="1.91:1">1.91</option>
           <option value="9:16">9×16</option>
           <option value="3:2">3×2</option>
           <option value="5:4">5×4</option>
@@ -113,7 +109,8 @@ document.addEventListener("DOMContentLoaded", () => {
       </form>
     </div>
 
-    <!-- RIGHT PANEL – PREVIEW & PROGRESS -->
+    <!-- RIGHT PANEL – PREVIEW + PROGRESS -->
+     
     <div class="panel right-panel">
       <h2 class="panel-title small">Before & After</h2>
 
@@ -121,11 +118,15 @@ document.addEventListener("DOMContentLoaded", () => {
         <p class="placeholder">Your cropped image will appear here</p>
       </div>
 
-      <div id="error-banner" style="display:none;color:red;font-weight:bold;margin-top:10px;">
-        An error occurred. Please try again.
-      </div>
+      <div id="error-banner" style="display:none;color:red;font-weight:bold;margin-top:10px;"></div>
 
-      <h2 class="panel-title small" style="margin-top:30px;">Progress Status</h2>
+      <h2 class="panel-title small" style="margin-top:30px;">Crop Variants</h2>
+      <div id="variant-grid" style="
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-bottom:18px;
+"></div>
 
       <div class="progress-bar">
         <div class="progress-fill" id="progress-fill"></div>
@@ -142,8 +143,10 @@ document.addEventListener("DOMContentLoaded", () => {
   </div>
 </div>
 
-<script src="/static/js/presets.js"></script>
-<script src="/static/js/crop.js"></script>
+<script id="builtin-presets" type="application/json">
+    {{ presets_json | tojson }}
+</script>
 
+<script src="/static/js/crop.js"></script>
 
 {% endblock %}
