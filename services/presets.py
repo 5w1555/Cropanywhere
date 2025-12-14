@@ -8,123 +8,59 @@ Preset configuration for Cropanyware.
 - Methods themselves live in the crop pipeline (and ultimately cropper.py).
 """
 
+from services.registry import CROP_METHODS
+
 PRESETS = {
-    # ------------------------------------------------------------------
-    # Smart / default behavior
-    # ------------------------------------------------------------------
     "auto": {
         "label": "Auto Crop",
-        "description": "Automatically chooses between frontal/profile bust based on face orientation.",
-        "method": "auto",          # maps to auto_crop
-        "params": {
-            "frontal_margin": 20,
-            "profile_margin": 20,
-            "lip_offset": 50,
-            "neck_offset": 50,
-        },
-        "ratio": None,             # e.g. "4:5", "1:1", etc.
+        "method": "auto",
+        "params": { "frontal_margin": 20, "profile_margin": 20 },
         "rotate": True,
+        "ratio": None,
     },
-
-    # ------------------------------------------------------------------
-    # Head & Bust
-    # ------------------------------------------------------------------
     "headbust": {
         "label": "Head & Bust",
-        "description": "Centered crop from hairline to upper torso with safe margins.",
-        "method": "headbust",      # maps to head_bust_crop
-        "params": {
-            "margin": 40,
-            "conf_threshold": 0.3,
-        },
-        "ratio": None,
+        "method": "head_bust",  # canonical
+        "params": { "margin": 40 },
         "rotate": True,
+        "ratio": None,
     },
-
-    # ------------------------------------------------------------------
-    # Orientation-specific
-    # ------------------------------------------------------------------
     "frontal": {
         "label": "Frontal Only",
-        "description": "Frontal bust crop from slightly above lips downwards.",
-        "method": "frontal",
-        "params": {
-            "margin": 20,
-            "lip_offset": 50,
-        },
-        "ratio": None,
+        "method": "frontal_lips_down",
+        "params": { "lip_offset": 50 },
         "rotate": True,
+        "ratio": None,
     },
-
     "profile": {
         "label": "Profile Only",
-        "description": "Side-profile crop from below jawline to bottom.",
-        "method": "profile",
-        "params": {
-            "margin": 20,
-            "neck_offset": 50,
-        },
-        "ratio": None,
+        "method": "profile_neck",
+        "params": { "neck_offset": 50 },
         "rotate": True,
+        "ratio": None,
     },
-
-    # ------------------------------------------------------------------
-    # Feature crops
-    # ------------------------------------------------------------------
     "chin": {
         "label": "Chin + Neck",
-        "description": "Crop starting at the chin and downwards.",
-        "method": "chin",
-        "params": {
-            "margin": 20,
-            "chin_offset": 20,
-        },
-        "ratio": None,
+        "method": "chin_down",
+        "params": { "chin_offset": 20 },
         "rotate": True,
+        "ratio": None,
     },
-
     "nose": {
         "label": "Face / Nose Box",
-        "description": "Tight bounding-box crop around the face.",
-        "method": "nose",
-        "params": {
-            "margin": 0,
-        },
-        "ratio": None,
+        "method": "nose_centered",
+        "params": {},
         "rotate": True,
+        "ratio": None,
     },
-
     "belowlips": {
         "label": "Below Lips",
-        "description": "Starts just under the mouth, goes to the bottom.",
-        "method": "belowlips",
-        "params": {
-            "margin": 20,
-            "offset": 10,
-        },
+        "method": "below_lips",
+        "params": { "offset": 10 },
+        "rotate": True,
         "ratio": None,
-        "rotate": True,
-    },
-
-    # ------------------------------------------------------------------
-    # Example “portrait-ready” preset reusing auto method
-    # ------------------------------------------------------------------
-    "portrait_4x5": {
-        "label": "Portrait 4:5",
-        "description": "Auto bust crop constrained to 4:5 aspect ratio (good for product models).",
-        "method": "auto",
-        "params": {
-            "frontal_margin": 20,
-            "profile_margin": 20,
-            "lip_offset": 40,
-            "neck_offset": 40,
-        },
-        "ratio": "4:5",
-        "rotate": True,
     },
 }
-
-
 
 from typing import List, Dict
 
