@@ -115,19 +115,21 @@ document.addEventListener("DOMContentLoaded", () => {
       <div id="error-banner"
            style="display:none; color:#ff7a7a; font-weight:bold; margin-top:10px;"></div>
 
-      <!-- PROGRESS -->
-      <h2 class="panel-title small" style="margin-top:30px;">Progress Status</h2>
-      <div class="progress-bar">
-        <div class="progress-fill" id="progress-fill"></div>
-      </div>
+      <section id="job-status-panel">
+        <!-- PROGRESS -->
+        <h2 class="panel-title small" style="margin-top:30px;">Progress Status</h2>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
 
-      <p id="status-text" class="status-text"></p>
-      <p id="progress-info" class="progress-info"></p>
+        <p id="status-text" class="status-text"></p>
+        <p id="progress-info" class="progress-info"></p>
 
-      <!-- DOWNLOAD -->
-      <button class="download-btn" id="download-btn" disabled style="margin-top:18px;">
-        Download Processed Images
-      </button>
+        <!-- DOWNLOAD -->
+        <button class="download-btn" id="download-btn" disabled style="margin-top:18px;">
+          Download Processed Images
+        </button>
+      </section>
 
     </div>
 

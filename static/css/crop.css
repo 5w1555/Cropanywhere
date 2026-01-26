@@ -138,6 +138,11 @@ body.crop-page main {
   color: #ffb88a;
 }
 
+/* --- JOB STATUS PANEL -------------------------------------------------- */
+#job-status-panel {
+  display: none;
+}
+
 /* --- FORMS / SELECTS / INPUTS ------------------------------------------ */
 .label {
   display: block;
