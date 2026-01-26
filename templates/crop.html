@@ -12,12 +12,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <div class="ui-wrapper">
   <div class="glass-panel">
-
-    <!-- LEFT PANEL – SETTINGS -->
-    <div class="panel left-panel">
+    <div class="panel primary-panel">
       <h2 class="panel-title">Crop Settings</h2>
 
-      <form id="crop-form" enctype="multipart/form-data">
+      <form id="crop-form" class="settings-form" enctype="multipart/form-data">
+        <!-- Upload -->
+        <label class="label">Upload</label>
+        <div class="upload-box" id="drop-zone">
+          <label for="file-input">
+            Drop File(s) Here<br>or<br>Click to Upload
+          </label>
+        </div>
+
+        <input id="file-input" type="file" name="files" accept="image/*" multiple hidden required>
 
         <!-- Backend Preset -->
         <label class="label" for="preset">Preset</label>
@@ -38,16 +45,6 @@ document.addEventListener("DOMContentLoaded", () => {
         <select id="saved-presets">
           <option value="">Select a saved preset</option>
         </select>
-
-        <!-- Upload -->
-        <label class="label">Upload</label>
-        <div class="upload-box" id="drop-zone">
-          <label for="file-input">
-            Drop File(s) Here<br>or<br>Click to Upload
-          </label>
-        </div>
-
-        <input id="file-input" type="file" name="files" accept="image/*" multiple hidden required>
 
         <!-- Margin -->
         <label class="label" for="crop-margin">Margin</label>
@@ -94,10 +91,6 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
 
       </form>
-    </div>
-
-    <!-- RIGHT PANEL – PREVIEW + VARIANTS + PROGRESS -->
-    <div class="panel right-panel">
 
       <!-- BEFORE / AFTER -->
       <h2 class="panel-title small">Before & After</h2>
@@ -128,7 +121,6 @@ document.addEventListener("DOMContentLoaded", () => {
       <button class="download-btn" id="download-btn" disabled style="margin-top:18px;">
         Download Processed Images
       </button>
-
     </div>
 
   </div>
