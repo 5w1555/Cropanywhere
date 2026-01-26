@@ -279,7 +279,7 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 /* --- BUTTONS ------------------------------------------------------------ */
-.download-btn {
+.primary-btn {
   width: 100%;
   padding: 14px 0;
 
@@ -297,12 +297,40 @@ input[type="range"]::-webkit-slider-thumb {
   box-shadow: 0 0 20px rgba(0, 240, 255, 0.28);
 }
 
-.download-btn:hover:not(:disabled) {
+.primary-btn:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 0 28px rgba(0, 240, 255, 0.42);
 }
 
-.download-btn:disabled {
+.primary-btn:disabled {
   opacity: 0.55;
+  cursor: default;
+}
+
+.download-btn {
+  width: 100%;
+  padding: 12px 0;
+
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 600;
+
+  border: 1px solid rgba(0, 220, 255, 0.35);
+  cursor: pointer;
+
+  background: rgba(6, 18, 26, 0.6);
+  color: #c9f5ff;
+
+  transition: 0.15s;
+}
+
+.download-btn:hover:not(:disabled) {
+  border-color: rgba(0, 240, 255, 0.6);
+  box-shadow: 0 0 18px rgba(0, 200, 255, 0.22);
+  transform: translateY(-1px);
+}
+
+.download-btn:disabled {
+  opacity: 0.5;
   cursor: default;
 }

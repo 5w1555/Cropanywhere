@@ -11,8 +11,7 @@ const rotateCheckbox = document.getElementById("rotate");
 const filterSelect   = document.getElementById("filter");
 const intensityInput = document.getElementById("intensity");
 
-const previewBtn     = document.getElementById("preview-btn");
-const processBtn     = document.getElementById("process-btn");
+const startProcessingBtn = document.getElementById("start-processing-btn");
 
 const previewBox     = document.getElementById("preview-box");
 const progressFill   = document.getElementById("progress-fill");
@@ -214,75 +213,10 @@ if (dropZone && fileInput) {
 
 
 // ===============================
-// Preview Button (minor change: still sends preset key)
+// Start Processing (unchanged API contract)
 // ===============================
-if (previewBtn) {
-    previewBtn.addEventListener("click", async () => {
-        const files = fileInput.files;
-        if (!files || files.length === 0) {
-            alert("Please upload an image first.");
-            return;
-        }
-
-        hideErrorBanner();
-        setProgress(20);
-        setStatus("Generating crop variants...");
-
-        const variantsBox = document.getElementById("variants-box");
-        variantsBox.innerHTML = `<p class="placeholder">Generating previews...</p>`;
-
-        const formData = new FormData();
-        formData.append("file", files[0]);
-
-        const res = await fetch("/preview", { // <-- fixed endpoint
-            method: "POST",
-            body: formData,
-        });
-
-        const data = await res.json();
-        variantsBox.innerHTML = "";
-
-        if (!data.ok) {
-            variantsBox.innerHTML = `<p style="color:#f55;">${data.message}</p>`;
-            setProgress(0);
-            setStatus("Preview failed");
-            return;
-        }
-
-        window.selectedMethod = null;
-        setStatus("Select a crop variant");
-
-        Object.entries(data.variants).forEach(([method, url]) => {
-            const img = document.createElement("img");
-            img.src = url;
-            img.className = "preview-thumb";
-            img.dataset.method = method;
-
-            img.style.width = "160px";
-            img.style.cursor = "pointer";
-            img.style.border = "3px solid transparent";
-            img.style.borderRadius = "6px";
-
-            img.onclick = () => {
-                document.querySelectorAll(".preview-thumb")
-                    .forEach(x => x.style.borderColor = "transparent");
-                img.style.borderColor = "#4CAF50";
-                window.selectedMethod = method;
-                setStatus(`Selected: ${method}`);
-            };
-
-            variantsBox.appendChild(img);
-        });
-
-        setProgress(100);
-    });
-}
-
-// ===============================
-// Process All (unchanged API contract)
-// ===============================
-if (processBtn) {
-    processBtn.addEventListener("click", async () => {
+if (startProcessingBtn) {
+    startProcessingBtn.addEventListener("click", async () => {
         const files = fileInput.files;
         if (!files || files.length === 0) {
             alert("Please upload at least one image.");

@@ -49,6 +49,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <input id="file-input" type="file" name="files" accept="image/*" multiple hidden required>
 
+        <button type="button" id="start-processing-btn" class="primary-btn" style="margin:4px 0 18px;">
+          Start Processing
+        </button>
+
         <!-- Margin -->
         <label class="label" for="crop-margin">Margin</label>
         <input id="crop-margin" type="range" min="0" max="100" value="30">
@@ -86,12 +90,6 @@ document.addEventListener("DOMContentLoaded", () => {
         <!-- Intensity -->
         <label class="label" style="margin-top:18px;" for="intensity">Intensity</label>
         <input id="intensity" type="range" min="0" max="100" value="50">
-
-        <!-- Buttons -->
-        <div style="display:flex; gap:10px; margin-top:22px;">
-          <button type="button" id="preview-btn" class="download-btn" style="flex:1;">Preview</button>
-          <button type="button" id="process-btn" class="download-btn" style="flex:1;">Process All</button>
-        </div>
 
       </form>
     </div>
