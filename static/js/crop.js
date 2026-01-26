@@ -19,6 +19,7 @@ const statusText     = document.getElementById("status-text");
 const progressInfo   = document.getElementById("progress-info");
 const downloadBtn    = document.getElementById("download-btn");
 const errorBanner    = document.getElementById("error-banner");
+const jobStatusPanel = document.getElementById("job-status-panel");
 
 let lastZipUrl = null;
 
@@ -156,6 +157,12 @@ function showErrorBanner(code) {
     }
 }
 
+function showJobStatusPanel() {
+    if (jobStatusPanel) {
+        jobStatusPanel.style.display = "block";
+    }
+}
+
 function renderBeforeAfter(beforeUrl, afterUrl, errorMsg) {
     if (!previewBox) return;
 
@@ -223,6 +230,7 @@ if (startProcessingBtn) {
             return;
         }
 
+        showJobStatusPanel();
         const formData = new FormData();
         formData.append("preset_label", window.selectedMethod || presetSelect?.value || "");
         formData.append("margin",       marginInput?.value || 30);

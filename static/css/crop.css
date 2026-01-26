@@ -138,6 +138,11 @@ body.crop-page main {
   color: #ffb88a;
 }
 
+/* --- JOB STATUS PANEL -------------------------------------------------- */
+#job-status-panel {
+  display: none;
+}
+
 /* --- FORMS / SELECTS / INPUTS ------------------------------------------ */
 .label {
   display: block;
@@ -162,6 +167,38 @@ select {
 
 select:hover {
   border-color: rgba(0, 255, 255, 0.55);
+}
+
+/* --- ADVANCED OPTIONS --------------------------------------------------- */
+.advanced-options {
+  margin-top: 12px;
+  padding: 12px 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 200, 255, 0.18);
+  background: rgba(6, 16, 22, 0.35);
+}
+
+.advanced-options summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #8ddff2;
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  margin: -2px 0 14px;
+  outline: none;
+}
+
+.advanced-options summary::marker,
+.advanced-options summary::-webkit-details-marker {
+  color: rgba(0, 210, 255, 0.75);
+}
+
+.advanced-options[open] {
+  border-color: rgba(0, 210, 255, 0.35);
+  box-shadow: inset 0 0 14px rgba(0, 200, 255, 0.06);
 }
 
 /* --- UPLOAD BOX --------------------------------------------------------- */
